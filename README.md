@@ -1,4 +1,5 @@
 # SecurityTools-Hunter
+
 用于狩猎公网上暴露的安全工具
 
 
@@ -13,6 +14,7 @@
 | Vshell     | 一款优秀的C2工具，便于快速上线          | admin/qwe123qwe   |
 | Nessus     | 全球大量使用的商业化扫描器(Tenable)     | admin/admin       |
 | ARL        | 斗象开源扫描器项目，针对WEB扫描效果不错 | admin/arlpass     |
+| NPS        | 流量代理工具                            | admin/123         |
 
 ## 二、使用
 
@@ -34,3 +36,4 @@
   - vshell：`app="Vshell-RAT"`
   - nessus：`app="tenable-Nessus"`
   - arl：`app="资产灯塔系统"`
+  - nps:`app="nps"`
