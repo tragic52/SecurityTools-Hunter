@@ -41,12 +41,15 @@ def check_vshell_login(host):
         'Accept': '*/*',
         'X-Requested-With': 'XMLHttpRequest'
     }
-    req = requests.post(url, headers=headers, data=data).json()
-    if (req["status"] == 1):
-        print(f"使用默认账密主机{host}")
-        with open("vshell_default_login.txt","a+",encoding="utf-8") as f:
+    try:
+        req = requests.post(url, headers=headers, data=data).json()
+        if (req["status"] == 1):
+            with open("vshell_default_login.txt","a+",encoding="utf-8") as f:
+                f.write(f"{host}\n")
+
+    except:
+        with open("Vshell_ErrorConnection.log",mode="a+",encoding="utf-8") as f:
             f.write(f"{host}\n")
-            f.close()
 
 # 检查SuperShell默认账密
 def check_supershell_login(host):
@@ -54,12 +57,15 @@ def check_supershell_login(host):
         "username": "tdragon6",
         "password": "tdragon6"
     }
-    req = requests.post(f"http://{host}/supershell/login/auth",json=data).json()
-    if (req["result"] == "success"):
-        print(f"使用默认账密主机{host}")
-        with open("supershell_default_login.txt","a+",encoding="utf-8") as f:
+    try:
+        req = requests.post(f"http://{host}/supershell/login/auth",json=data).json()
+        if (req["result"] == "success"):
+            with open("supershell_default_login.txt","a+",encoding="utf-8") as f:
+                f.write(f"{host}\n")
+
+    except:
+        with open("SuperShell_ErrorConnection.log",mode="a+",encoding="utf-8") as f:
             f.write(f"{host}\n")
-            f.close()
 
 # 检查Nessus的默认账密
 def check_nessus_login(host):
@@ -75,11 +81,14 @@ def check_nessus_login(host):
         'Content-Type': 'application/json',
     }
     req = requests.post(url, headers=headers, json=data,verify=False).json()
-    if (req["token"] != ""):
-        print(f"使用默认账密主机{host}")
-        with open("nessus_default_login.txt","a+",encoding="utf-8") as f:
+    try:
+        if (req["token"] != ""):
+            with open("nessus_default_login.txt","a+",encoding="utf-8") as f:
+                f.write(f"{host}\n")
+
+    except:
+        with open("Nessus_ErrorConnection.log",mode="a+",encoding="utf-8") as f:
             f.write(f"{host}\n")
-            f.close()
 
 # 检查ARL的默认账密
 def check_arl_login(host):
@@ -94,12 +103,42 @@ def check_arl_login(host):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36',
         'Content-Type': 'application/json',
     }
-    req = requests.post(url, headers=headers, json=data,verify=False).json()
-    if (req["code"] == 200):
-        print(f"使用默认账密主机{host}")
-        with open("arl_default_login.txt","a+",encoding="utf-8") as f:
+    try:
+        req = requests.post(url, headers=headers, json=data,verify=False).json()
+        if (req["code"] == 200):
+            with open("arl_default_login.txt","a+",encoding="utf-8") as f:
+                f.write(f"{host}\n")
+    except:
+        with open("ARL_ErrorConnection.log",mode="a+",encoding="utf-8") as f:
             f.write(f"{host}\n")
-            f.close()
+
+# 检查NPS的默认密码
+def check_nps_login(host):
+    url = f"http://{host}/login/verify"
+
+    headers = {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Accept": "*/*",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+        "Connection": "keep-alive"
+    }
+
+    data = {
+        "username": "admin",
+        "password": "123"
+    }
+    try:
+        response = requests.post(url, headers=headers, data=data).json()
+
+        if response['status'] == 1:
+            with open ("nps_default_login.txt",mode="a+",encoding="utf-8") as f:
+                f.write(f"{host}\n")
+    except:
+        with open("NPS_ErrorConnection.log",mode="a+",encoding="utf-8") as f:
+            f.write(f"{host}\n")
+
 
 # 程序主函数，用以启动检查
 def main():
@@ -118,7 +157,7 @@ def main():
     )
     parser.add_argument("-p",
                         "--payload",
-                        help="Target payload; Example:nessus、supershell、vshell、arl")
+                        help="Target payload; Example:nessus、supershell、vshell、arl、nps")
     
     args = parser.parse_args()
 
@@ -130,15 +169,17 @@ def main():
         payload = check_vshell_login
     elif args.payload == "arl":
         payload = check_arl_login
+    elif args.payload == "nps":
+        payload = check_nps_login
     else:
-        print("请输入正确的payload!!!\n目前仅支持检查nessus、supershell、vshell、arl")
+        print("请输入正确的payload!!!\n目前仅支持检查nessus、supershell、vshell、arl、nps")
         exit()
     
     print("检查程序正在启动~~~~~")
     
     with open(args.file,"r",encoding="utf-8") as f:
-        # 创建一个线程池，设置最大工作线程为150
-        with concurrent.futures.ThreadPoolExecutor(max_workers=150) as executor:
+        # 创建一个线程池，设置最大工作线程为30
+        with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
             # 创建一个数组，用于保存每个执行任务的对象
             to_do = []
 
